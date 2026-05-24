@@ -80,7 +80,8 @@ input {
 
 .nav-link,
 .primary-button,
-.ghost-button {
+.ghost-button,
+.danger-button {
   min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -102,6 +103,12 @@ input {
   color: #fff;
 }
 
+.danger-button {
+  background: #fff7f7;
+  border-color: rgba(207, 59, 59, 0.3);
+  color: var(--red);
+}
+
 .compact-button {
   min-height: 38px;
   padding: 0 10px;
@@ -113,11 +120,13 @@ input {
 
 .nav-link:hover,
 .primary-button:hover,
-.ghost-button:hover {
+.ghost-button:hover,
+.danger-button:hover {
   transform: translateY(-1px);
 }
 
-.primary-button:disabled {
+.primary-button:disabled,
+.danger-button:disabled {
   cursor: wait;
   opacity: 0.7;
   transform: none;
@@ -190,6 +199,16 @@ input {
   background: rgba(207, 59, 59, 0.08);
   color: var(--red);
   font-weight: 700;
+}
+
+.action-message {
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: #f6fbf8;
+  color: var(--green-strong);
+  font-weight: 800;
 }
 
 .auth-links {
@@ -487,7 +506,8 @@ input {
 
   .nav-link,
   .primary-button,
-  .ghost-button {
+  .ghost-button,
+  .danger-button {
     flex: 1 1 auto;
   }
 

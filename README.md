@@ -86,6 +86,8 @@ Collection: `rfid_logs`
 
 ปุ่มเพิ่ม-ลดสัญญาณในหน้า `/scan` เป็นค่าระดับสัญญาณสำหรับบันทึกประกอบ log (`signalLevel`) ไม่ได้ควบคุมกำลังส่งของเครื่อง RFID Scanner โดยตรง
 
+ปุ่ม `Reset ทั้งหมด` ในหน้า `/dashboard` จะลบ document ทั้งหมดใน collection `rfid_logs` หลังจากผู้ใช้ยืนยันแล้ว
+
 ## Firestore Rules สำหรับทดสอบเท่านั้น
 
 ```js

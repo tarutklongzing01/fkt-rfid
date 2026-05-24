@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, orderBy, query, writeBatch } from "firebase/firestore";
 import AuthGate from "../../components/AuthGate";
 import UserBar from "../../components/UserBar";
 import { db } from "../../lib/firebase";
@@ -18,10 +18,27 @@ function formatTimestamp(value) {
   }).format(date);
 }
 
+async function deleteAllLogs() {
+  const snapshot = await getDocs(collection(db, "rfid_logs"));
+  const docs = snapshot.docs;
+
+  for (let index = 0; index < docs.length; index += 450) {
+    const batch = writeBatch(db);
+    docs.slice(index, index + 450).forEach((item) => {
+      batch.delete(item.ref);
+    });
+    await batch.commit();
+  }
+
+  return docs.length;
+}
+
 function DashboardContent() {
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
 
   useEffect(() => {
     const logsQuery = query(collection(db, "rfid_logs"), orderBy("updatedAt", "desc"));
@@ -56,6 +73,28 @@ function DashboardContent() {
 
   const recentLogs = logs.slice(0, 20);
 
+  async function handleResetAll() {
+    if (logs.length === 0 || resetting) return;
+
+    const confirmed = window.confirm(
+      `ต้องการ Reset ข้อมูลสแกนทั้งหมด ${logs.length} รายการหรือไม่?\n\nการลบนี้จะลบข้อมูลใน Firestore collection rfid_logs`
+    );
+
+    if (!confirmed) return;
+
+    setResetting(true);
+    setResetMessage("กำลัง reset ข้อมูล...");
+
+    try {
+      const deletedCount = await deleteAllLogs();
+      setResetMessage(`Reset สำเร็จ ลบข้อมูล ${deletedCount} รายการแล้ว`);
+    } catch (resetError) {
+      setResetMessage(`Reset ไม่สำเร็จ: ${resetError.message}`);
+    } finally {
+      setResetting(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -65,6 +104,14 @@ function DashboardContent() {
         </div>
         <nav className="nav-actions">
           <UserBar />
+          <button
+            className="danger-button"
+            type="button"
+            onClick={handleResetAll}
+            disabled={resetting || loading || logs.length === 0}
+          >
+            {resetting ? "Resetting..." : "Reset ทั้งหมด"}
+          </button>
           <Link className="nav-link" href="/scan">
             Scan
           </Link>
@@ -81,6 +128,7 @@ function DashboardContent() {
             <div className="total-pill">Realtime</div>
           </div>
 
+          {resetMessage ? <div className="action-message">{resetMessage}</div> : null}
           {error ? <div className="empty-state">อ่านข้อมูลไม่สำเร็จ: {error}</div> : null}
           {loading ? <div className="empty-state">กำลังโหลดข้อมูล...</div> : null}
 
