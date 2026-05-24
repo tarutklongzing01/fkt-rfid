@@ -291,6 +291,21 @@ input {
   margin-top: 14px;
 }
 
+.mode-control {
+  margin-bottom: 16px;
+}
+
+.mode-control .segmented-control {
+  margin-top: 0;
+}
+
+.mode-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .signal-control {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) 56px;
@@ -474,6 +489,11 @@ input {
   font-weight: 900;
 }
 
+.mode-cell {
+  color: var(--blue);
+  font-weight: 900;
+}
+
 .empty-state {
   padding: 22px;
   color: var(--muted);
@@ -520,6 +540,6 @@ input {
   }
 
   .data-table {
-    min-width: 620px;
+    min-width: 680px;
   }
 }

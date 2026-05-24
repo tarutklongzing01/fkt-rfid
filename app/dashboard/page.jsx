@@ -176,6 +176,7 @@ function DashboardContent() {
                     <th>scanCode</th>
                     <th>category</th>
                     <th>station</th>
+                    <th>mode</th>
                     <th>signal</th>
                     <th>updatedAt</th>
                   </tr>
@@ -186,6 +187,7 @@ function DashboardContent() {
                       <td className="recent-code">{log.scanCode}</td>
                       <td>{log.category || "UNKNOWN"}</td>
                       <td>{log.station || "-"}</td>
+                      <td className="mode-cell">{log.scanMode || "-"}</td>
                       <td className="signal-cell">
                         {typeof log.signalLevel === "number" ? `${log.signalLevel}%` : "-"}
                       </td>

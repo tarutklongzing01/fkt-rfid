@@ -76,6 +76,7 @@ Collection: `rfid_logs`
   detail: string,
   itemType: string,
   station: string,
+  scanMode: string,
   signalLevel: number,
   scannedBy: string,
   scannedByUid: string,
@@ -85,6 +86,8 @@ Collection: `rfid_logs`
 ```
 
 ปุ่มเพิ่ม-ลดสัญญาณในหน้า `/scan` เป็นค่าระดับสัญญาณสำหรับบันทึกประกอบ log (`signalLevel`) ไม่ได้ควบคุมกำลังส่งของเครื่อง RFID Scanner โดยตรง
+
+ปุ่มโหมด `RFID / Barcode` ในหน้า `/scan` ใช้เลือกประเภทการสแกนและบันทึกเป็น field `scanMode` ใน Firestore แต่ไม่ได้สั่งให้ตัว Reader เปลี่ยนโหมดคลื่นโดยตรง หากต้องการควบคุม Reader จริงต้องใช้ SDK/API/Serial command ของเครื่องรุ่นนั้น
 
 ปุ่ม `Reset ทั้งหมด` ในหน้า `/dashboard` จะลบ document ทั้งหมดใน collection `rfid_logs` หลังจากผู้ใช้ยืนยันแล้ว
 

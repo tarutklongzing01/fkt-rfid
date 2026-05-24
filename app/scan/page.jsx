@@ -11,6 +11,7 @@ import { useAuth } from "../../lib/useAuth";
 
 const DEFAULT_STATION = "SCAN_STATION_01";
 const SIGNAL_STORAGE_KEY = "rfid_signal_level";
+const SCAN_MODE_STORAGE_KEY = "rfid_scan_mode";
 
 function parseScan(scanCode) {
   const normalizedCode = scanCode.trim().toUpperCase();
@@ -42,6 +43,7 @@ function ScanContent() {
   const inputRef = useRef(null);
   const { user } = useAuth();
   const [value, setValue] = useState("");
+  const [scanMode, setScanMode] = useState("RFID");
   const [signalLevel, setSignalLevel] = useState(70);
   const [latest, setLatest] = useState(null);
   const [status, setStatus] = useState({
@@ -51,9 +53,14 @@ function ScanContent() {
 
   useEffect(() => {
     const savedSignal = Number(window.localStorage.getItem(SIGNAL_STORAGE_KEY));
+    const savedMode = window.localStorage.getItem(SCAN_MODE_STORAGE_KEY);
 
     if (!Number.isNaN(savedSignal)) {
       setSignalLevel(clampSignal(savedSignal));
+    }
+
+    if (savedMode === "RFID" || savedMode === "BARCODE") {
+      setScanMode(savedMode);
     }
 
     inputRef.current?.focus();
@@ -63,11 +70,15 @@ function ScanContent() {
     window.localStorage.setItem(SIGNAL_STORAGE_KEY, String(signalLevel));
   }, [signalLevel]);
 
+  useEffect(() => {
+    window.localStorage.setItem(SCAN_MODE_STORAGE_KEY, scanMode);
+  }, [scanMode]);
+
   async function saveScan(rawCode) {
     const { scanCode, masterCode, master, payload } = parseScan(rawCode);
 
     if (!scanCode) {
-      setStatus({ type: "warning", text: "กรุณาสแกนรหัส RFID" });
+      setStatus({ type: "warning", text: "กรุณาสแกนรหัส" });
       inputRef.current?.focus();
       return;
     }
@@ -85,6 +96,7 @@ function ScanContent() {
         detail: payload.detail,
         itemType: payload.itemType,
         station: DEFAULT_STATION,
+        scanMode,
         signalLevel,
         scannedBy: user?.email || "UNKNOWN",
         scannedByUid: user?.uid || "UNKNOWN",
@@ -102,6 +114,7 @@ function ScanContent() {
         category: payload.category,
         itemName: payload.itemName,
         masterCode,
+        scanMode,
         signalLevel
       });
       setStatus({
@@ -135,12 +148,21 @@ function ScanContent() {
     window.setTimeout(() => inputRef.current?.focus(), 0);
   }
 
+  function changeMode(mode) {
+    setScanMode(mode);
+    setStatus({
+      type: "idle",
+      text: mode === "RFID" ? "โหมด RFID พร้อมสแกน" : "โหมด Barcode พร้อมสแกน"
+    });
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
           <h1 className="brand-title">Scan RFID</h1>
-          <p className="brand-subtitle">รองรับ RFID Scanner แบบ Keyboard HID</p>
+          <p className="brand-subtitle">รองรับ RFID หรือ Barcode Scanner แบบ Keyboard HID</p>
         </div>
         <nav className="nav-actions">
           <UserBar />
@@ -153,8 +175,33 @@ function ScanContent() {
       <div className="scan-layout">
         <section className="panel scan-panel">
           <form onSubmit={handleSubmit}>
+            <div className="mode-control">
+              <span className="field-label">Scan Mode</span>
+              <div className="segmented-control">
+                <button
+                  className={scanMode === "RFID" ? "segment active" : "segment"}
+                  type="button"
+                  onClick={() => changeMode("RFID")}
+                >
+                  RFID
+                </button>
+                <button
+                  className={scanMode === "BARCODE" ? "segment active" : "segment"}
+                  type="button"
+                  onClick={() => changeMode("BARCODE")}
+                >
+                  Barcode
+                </button>
+              </div>
+              <p className="mode-note">
+                {scanMode === "RFID"
+                  ? "ใช้เมื่อเครื่องส่งรหัสจากหัวอ่าน RFID เข้ามาในช่องสแกน"
+                  : "ใช้เมื่อเครื่องส่งรหัสจากบาร์โค้ดหรือ QR เข้ามาในช่องสแกน"}
+              </p>
+            </div>
+
             <label className="field-label" htmlFor="scanCode">
-              RFID Scan Code
+              {scanMode === "RFID" ? "RFID Scan Code" : "Barcode Scan Code"}
             </label>
             <input
               ref={inputRef}
@@ -165,7 +212,7 @@ function ScanContent() {
               autoFocus
               autoComplete="off"
               inputMode="text"
-              placeholder="FOAMBL-006769"
+              placeholder={scanMode === "RFID" ? "FOAMBL-006769" : "TOTE23-004279"}
             />
 
             <div className="signal-control" aria-label="Signal level">
@@ -213,6 +260,10 @@ function ScanContent() {
             <div className="metric">
               <p className="metric-label">Master Code</p>
               <p className="metric-value">{latest?.masterCode || "-"}</p>
+            </div>
+            <div className="metric">
+              <p className="metric-label">โหมดล่าสุด</p>
+              <p className="metric-value">{latest?.scanMode || scanMode}</p>
             </div>
             <div className="metric">
               <p className="metric-label">สัญญาณล่าสุด</p>
